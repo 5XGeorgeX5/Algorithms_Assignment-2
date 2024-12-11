@@ -280,7 +280,7 @@ private:
         return;
     }
 
-    void printInOrder(Node *node)
+    void printInOrder(Node *node) const
     {
         if (node == nullptr)
             return;
@@ -289,7 +289,7 @@ private:
         printInOrder(node->right);
     }
 
-    void printInOrderRight(Node *node)
+    void printInOrderRight(Node *node) const
     {
         if (node == nullptr)
             return;
@@ -323,13 +323,13 @@ public:
         deleteFixup(replacement);
     }
 
-    void printAscending()
+    void printAscending() const
     {
         printInOrder(root);
         cout << endl;
     }
 
-    void printDescending()
+    void printDescending() const
     {
         printInOrderRight(root);
         cout << endl;
