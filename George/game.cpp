@@ -4,47 +4,45 @@ using namespace std;
 class Game
 {
 private:
-    SkipList<int, int> idSortedList;
-    SkipList<pair<int, int>, int> scoreSortedList;
-    int size = 0;
+    SkipList<string, int> nameSortedList;
+    SkipList<pair<int, string>, int> scoreSortedList;
 
 public:
-    void addPlayer(int id, int score = 0)
+    void addPlayer(string name, int score = 0)
     {
-        size++;
-        idSortedList.insert(id, score);
-        scoreSortedList.insert({score, id}, score);
+        nameSortedList.insert(name, score);
+        scoreSortedList.insert({score, name}, score);
     }
 
-    void removePlayer(int id)
+    void removePlayer(string name)
     {
-        size--;
-        int score = idSortedList.remove(id);
-        scoreSortedList.remove({score, id});
+        int score = nameSortedList.remove(name);
+        scoreSortedList.remove({score, name});
     }
 
-    void updateScore(int id, int newScore)
+    void updateScore(string name, int newScore)
     {
-        removePlayer(id);
-        addPlayer(id, newScore);
+        removePlayer(name);
+        addPlayer(name, newScore);
     }
 
-    void viewScore(int id)
+    void viewScore(string name)
     {
-        cout << "Player ID: " << id << " Score: " << idSortedList.search(id) << '\n';
+        cout << name << "'s Score: " << nameSortedList.search(name) << '\n';
     }
 
     void viewTopPlayers(int count)
     {
-        vector<pair<pair<int, int>, int>> topPlayers = scoreSortedList.getArray();
-        if (size < count)
-            count = size;
+        vector<pair<pair<int, string>, int>> players = scoreSortedList.getArray();
+        if (players.size() < count)
+            count = players.size();
         int rank = 1;
-        for (auto it = topPlayers.rbegin(); it != topPlayers.rend(); it++)
+        cout << "Top " << count << " Players:\n";
+        for (auto it = players.rbegin(); it != players.rend(); it++)
         {
             if (rank > count)
                 break;
-            cout << "Rank: " << rank << " Player ID: " << it->first.second << " Score: " << it->first.first << '\n';
+            cout << "Rank " << rank << ": " << it->first.second << " Score: " << it->second << '\n';
             rank++;
         }
     }
@@ -54,21 +52,15 @@ int main()
 {
     Game game;
 
-    game.addPlayer(1);
-    game.addPlayer(2);
-    game.addPlayer(3);
-
-    game.updateScore(1, 50);
-    game.updateScore(2, 30);
-    game.updateScore(3, 70);
-
+    game.addPlayer("Alice", 100);
+    game.addPlayer("Bob", 200);
+    game.addPlayer("David", 400);
+    game.addPlayer("Eve", 500);
+    game.addPlayer("Charlie", 300);
     game.viewTopPlayers(3);
-
-    game.updateScore(1, -10);
-    game.viewTopPlayers(2);
-
-    game.viewScore(1);
-    game.removePlayer(2);
+    game.updateScore("Alice", 350);
+    game.viewTopPlayers(3);
+    game.removePlayer("David");
     game.viewTopPlayers(3);
 
     return 0;

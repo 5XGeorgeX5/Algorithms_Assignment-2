@@ -5,7 +5,7 @@
 #include <vector>
 #include <ctime>
 
-using std::cout, std::endl, std::vector, std::pair;
+using std::cout, std::vector, std::pair;
 
 template <typename Key, typename Value>
 class SkipList
@@ -15,157 +15,154 @@ private:
     {
         Key key;
         Value value;
-        vector<Node *> next;
-        Node(Key key, Value value, int Level) : key(key), value(value), next(Level + 1, nullptr) {}
+        Node *next = nullptr;
+        Node *down = nullptr;
+        Node() {}
+        Node(Key key, Value value) : key(key), value(value) {}
     };
-    const int maxNumberOfLevel = 5;
+    const int maxNumberOfLevels = 10;
     Node *head;
-    int Level;
+
+    int getHeight()
+    {
+        int height = 1;
+        while (height < maxNumberOfLevels && (rand() % 2) == 1)
+        {
+            ++height;
+        }
+        return height;
+    }
+
+    Node *createTower(int height, Key key, Value value)
+    {
+        Node *top = nullptr;
+        for (int i = 0; i < height; i++)
+        {
+            Node *tmp = new Node(key, value);
+            tmp->down = top;
+            top = tmp;
+        }
+        return top;
+    }
 
 public:
     SkipList()
     {
         std::srand(static_cast<unsigned int>(std::time(0)));
-        head = new Node(Key{}, Value{}, maxNumberOfLevel);
-        Level = 0;
+        head = new Node();
+        Node *current = head;
+        for (int i = 1; i < maxNumberOfLevels; i++)
+        {
+            current->down = new Node();
+            current = current->down;
+        }
     }
 
     void insert(Key key, Value value)
     {
-        int newLevel{0};
-
-        while (newLevel < maxNumberOfLevel && (rand() % 2) == 1)
+        int height = getHeight();
+        int currentLevel = maxNumberOfLevels;
+        Node *current = head;
+        Node *newNode = createTower(height, key, value);
+        while (current)
         {
-            ++newLevel;
-        }
-
-        if (Level < newLevel)
-        {
-            head->next.resize(newLevel + 1, nullptr);
-            Level = newLevel;
-        }
-
-        Node *current{head};
-        vector<Node *> Update(Level + 1, nullptr);
-
-        for (int i{Level}; i >= 0; --i)
-        {
-            while (current->next[i] && current->next[i]->key < key)
+            while (current->next && current->next->key < key)
             {
-                current = current->next[i];
+                current = current->next;
             }
-            Update[i] = current;
-        }
-
-        current = current->next[0];
-
-        if (current == nullptr || current->key != key)
-        {
-            Node *newNode{new Node(key, value, Level)};
-
-            for (int i{0}; i <= newLevel; ++i)
+            if (currentLevel <= height)
             {
-                newNode->next[i] = Update[i]->next[i];
-                Update[i]->next[i] = newNode;
+                newNode->next = current->next;
+                current->next = newNode;
+                newNode = newNode->down;
             }
+            current = current->down;
+            currentLevel--;
         }
     }
 
     Value remove(Key key)
     {
-        Node *current{head};
+        Node *current = head;
+        Value value;
+        bool found = false;
 
-        vector<Node *> Update(Level + 1, nullptr);
-
-        for (int i{Level}; i >= 0; --i)
+        while (current)
         {
-            while (current->next[i] && current->next[i]->key < key)
+            while (current->next && current->next->key < key)
             {
-                current = current->next[i];
+                current = current->next;
             }
-            Update[i] = current;
+            if (current->next && current->next->key == key)
+            {
+                Node *tmp = current->next;
+                current->next = current->next->next;
+                value = tmp->value;
+                found = true;
+                delete tmp;
+            }
+            current = current->down;
         }
-
-        current = current->next[0];
-
-        if (current != nullptr && current->key == key)
-        {
-            for (int i{0}; i <= Level; ++i)
-            {
-                if (Update[i]->next[i] != current)
-                {
-                    break;
-                }
-                else
-                {
-                    Update[i]->next[i] = current->next[i];
-                }
-            }
-            Value value = current->value;
-
-            delete current;
-
-            while (Level > 0 && head->next[Level] == nullptr)
-            {
-                --Level;
-            }
-            return value;
-        }
-        else
+        if (!found)
         {
             throw std::runtime_error("Key not found");
         }
+        return value;
     }
 
     Value search(Key key)
     {
-        Node *current{head};
+        Node *current = head;
 
-        for (int i{Level}; i >= 0; --i)
+        while (current->down)
         {
-            while (current->next[i] && current->next[i]->key < key)
+            while (current->next && current->next->key < key)
             {
-                current = current->next[i];
+                current = current->next;
             }
+            if (current->next && current->next->key == key)
+            {
+                return current->next->value;
+            }
+            current = current->down;
         }
-
-        current = current->next[0];
-
-        if (current != nullptr && current->key == key)
-        {
-            return current->value;
-        }
-        else
-        {
-            throw std::runtime_error("Key not found");
-        }
+        throw std::runtime_error("Key not found");
     }
 
     void display()
     {
-        cout << "skip List:" << endl;
+        cout << "skip List:\n";
+        Node *current = head;
+        int currentLevel = maxNumberOfLevels;
 
-        for (int i{Level}; i >= 0; --i)
+        while (current)
         {
-            Node *current{head->next[i]};
-
-            cout << "Level " << i << ": ";
-
-            while (current != nullptr)
+            cout << "Level " << currentLevel << ": ";
+            Node *tmp = current->next;
+            while (tmp)
             {
-                cout << current->key << ": " << current->value << '\n';
-                current = current->next[i];
+                cout << tmp->key << ": " << tmp->value << " | ";
+                tmp = tmp->next;
             }
+            cout << '\n';
+            current = current->down;
+            currentLevel--;
         }
     }
+
     vector<pair<Key, Value>> getArray()
     {
         vector<pair<Key, Value>> result;
-        Node *current{head->next[0]};
+        Node *current = head;
+        while (current->down)
+        {
+            current = current->down;
+        }
+        current = current->next;
         while (current != nullptr)
         {
             result.push_back({current->key, current->value});
-            current = current->next[0];
+            current = current->next;
         }
         return result;
     }
