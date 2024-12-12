@@ -1,4 +1,4 @@
-#include "SkipList.cpp"
+#include "skipList.cpp"
 using namespace std;
 
 class Game
@@ -36,14 +36,23 @@ public:
         vector<pair<pair<int, string>, int>> players = scoreSortedList.getArray();
         if (players.size() < count)
             count = players.size();
-        int rank = 1;
+        int lastScore = INT_MAX;
+        int repeated = 1;
+        int rank = 0;
         cout << "Top " << count << " Players:\n";
         for (auto it = players.rbegin(); it != players.rend(); it++)
         {
+            if (it->second == lastScore)
+                repeated++;
+            else
+            {
+                lastScore = it->second;
+                rank += repeated;
+                repeated = 1;
+            }
             if (rank > count)
                 break;
             cout << "Rank " << rank << ": " << it->first.second << " Score: " << it->second << '\n';
-            rank++;
         }
     }
 };
@@ -58,7 +67,7 @@ int main()
     game.addPlayer("Eve", 500);
     game.addPlayer("Charlie", 300);
     game.viewTopPlayers(3);
-    game.updateScore("Alice", 350);
+    game.updateScore("Alice", 300);
     game.viewTopPlayers(3);
     game.removePlayer("David");
     game.viewTopPlayers(3);
