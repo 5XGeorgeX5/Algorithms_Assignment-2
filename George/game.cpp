@@ -66,11 +66,11 @@ int main()
     game.addPlayer("David", 400);
     game.addPlayer("Eve", 500);
     game.addPlayer("Charlie", 300);
-    game.viewTopPlayers(3);
+    game.viewTopPlayers(4);
     game.updateScore("Alice", 300);
-    game.viewTopPlayers(3);
+    game.viewTopPlayers(4);
     game.removePlayer("David");
-    game.viewTopPlayers(3);
+    game.viewTopPlayers(4);
 
     return 0;
 }
